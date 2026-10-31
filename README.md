@@ -1,209 +1,163 @@
 # JapyScript
 
-**Python's readability. JavaScript's reach.**
+**An independent, statically-checkable systems language with its own compiler, its own virtual machine, and its own standard library.**
 
-JapyScript (`.jpy`) is a general-purpose programming language that fuses the parts of Python and JavaScript that developers actually love — Python's clean indentation-based syntax, expressive collections, and readable control flow, married to JavaScript's event loop, arrow functions, template literals, and its universal runtime footprint.
+JapyScript (`.jpy`) is designed for software that lives for a decade: network servers, compilers, protocol handlers, data-processing pipelines, background services, and interactive applications. It has no foreign runtime beneath it. Every layer — lexer, parser, checker, bytecode compiler, virtual machine, package manager — is part of JapyScript itself.
 
-Write code that reads like Python and runs where JavaScript runs.
+---
 
-## Why JapyScript
+## Design goals
 
-Python and JavaScript are the two most-used languages on Earth, and they solve opposite halves of the same problem:
+1. **Independence.** JapyScript does not delegate execution to any host language. Programs compile to JapyScript bytecode modules (`.jpc`) and execute on the JapyScript Virtual Machine.
+2. **Readability under pressure.** Blocks are defined by indentation. Braces are accepted where they aid clarity, never required. Statement terminators are optional.
+3. **Optional static typing.** Type declarations are verified at compile time. Untyped code runs without ceremony. Typed code catches errors before deployment.
+4. **Concurrency as a primitive.** `async` / `await` are keywords. Top-level `await` is legal. Structured concurrency primitives (`spawn`, `select`, `join`) are first-class standard-library citizens.
+5. **One binary.** The compiler, VM, standard library, formatter, linter, and package manager ship as a single self-contained executable.
+6. **Boring where it counts.** Deterministic garbage collection, stable error messages, reproducible builds, no hidden global state.
 
-- Python gives you **clarity** — indentation, slicing, comprehensions, a batteries-included standard library.
-- JavaScript gives you **reach** — a single language on every client, every server, every edge runtime, plus the best async model in mainstream programming.
+---
 
-Developers are forced to pick. JapyScript refuses the choice. One syntax, one standard library, one package manager — compiled to both ecosystems.
+## Language reference (excerpt)
 
-## Design Principles
+### Bindings
 
-1. **Indentation is the block.** No braces required, no semicolons required. Braces are accepted where they aid clarity, never mandated.
-2. **Two dialects, one grammar.** Python idioms and JavaScript idioms are both first-class. `arr.append(x)` and `arr.push(x)` do the same thing. `not x` and `!x` do the same thing. You never lose a habit.
-3. **Transparent compilation.** `jpy` compiles to JavaScript and to Python. There is no opaque VM you can't debug — the output is readable, source-mapped, and inspectable.
-4. **Types are optional and enforced where declared.** Untyped code runs. Typed code is checked before it runs. No ceremony tax.
-5. **Zero-dependency core.** The compiler, runtime, and standard library ship as one installable with no third-party dependencies.
-6. **Async is not an afterthought.** `async`/`await` is a language primitive with `await` allowed at top level.
-
-## A Quick Tour
-
-### Hello, world
-
-```javascript
-print("Hello, JapyScript!")
-console.log("Hello, JapyScript!")   // same function
-```
-
-### Variables and constants
-
-```javascript
-name = "Ada"            // implicit declaration, Python-style
-age = 36
-
-const PI = 3.14159      // explicit, immutable
-let counter = 0         // explicit, mutable
-var legacy = true       // hoisted, kept for JS interop
-```
+``jpy
+name = "Ada"
+let count = 0
+const LIMIT = 1024
+``
 
 ### Functions
 
-```javascript
-def greet(name, greeting = "Hello"):
-    return f"{greeting}, {name}!"
+``jpy
+def parse(source: string) -> Node:
+    return Parser(source).build()
 
-double = (x) => x * 2
-
-def add(a: int, b: int) -> int:
-    return a + b
-```
+transform = (x) => x * 2
+``
 
 ### Control flow
 
-```javascript
-for item in items:
-    if item.active && item.score >= 90:
-        print(item.name)
-    elif item.score >= 50:
-        continue
+``jpy
+for job in queue:
+    if job.retries && job.retries >= MAX:
+        dead_letter(job)
+    elif job.priority > 5:
+        dispatch(job)
     else:
-        break
+        continue
 
-for i in range(10): print(i)
+while pending.count() > 0:
+    process(pending.pop())
+``
 
-users.forEach((u) => print(u.name))
-```
+### Asynchronous execution
 
-### Collections
+``jpy
+async def fetch_route(path):
+    response = await http.get(path)
+    if !response.ok:
+        throw new HttpError(response.status)
+    return response.json()
 
-```javascript
-nums = [1, 2, 3]
-nums.append(4)          // Python method
-nums.push(5)            // JS method — identical effect
+routes = await Promise.all(paths.map(fetch_route))
+``
 
-first = nums[0]
-last  = nums[-1]        // negative indexing
-slice = nums[1:3]       // slicing
+### Servers
 
-squares = [n * n for n in nums if n % 2 == 1]
+``jpy
+app = Server(host="0.0.0.0", port=8080)
 
-config = {"host": "localhost", "port": 8080}
-config["debug"] = true
-config.port             // attribute access on dicts
-config.get("timeout", 30)
-```
+app.route("GET", "/health", () => {"status": "ok"})
+app.route("POST", "/jobs", async (req) => {
+    job = await queue.enqueue(req.body)
+    return {"id": job.id, "accepted": true}
+})
+
+await app.listen()
+``
+
+### Types
+
+``jpy
+type Job = {
+    id: string,
+    payload: bytes,
+    attempts: int
+}
+
+type Handler = (Job) -> Result
+
+def execute(job: Job, handler: Handler) -> Result:
+    return handler(job)
+``
 
 ### Classes
 
-```javascript
-class Animal:
-    def __init__(self, name):
-        self.name = name
+``jpy
+class Connection:
+    def __init__(self, host: string, port: int):
+        self.host = host
+        self.port = port
+        self.socket = null
 
-    def speak(self):
-        return f"{self.name} makes a sound"
+    def open(self) -> bool:
+        self.socket = net.connect(self.host, self.port)
+        return self.socket != null
+``
 
-class Dog(Animal):
-    def speak(self):
-        return f"{self.name} barks"
+---
 
-    @staticmethod
-    def species():
-        return "Canis familiaris"
-```
+## Architecture
 
-### Asynchronous programming
+| Layer      | Responsibility |
+| ---------- | -------------- |
+| `lexer`    | Source → tokens. Indentation-aware. |
+| `parser`   | Tokens → AST. Recursive descent plus Pratt expression parsing. |
+| `checker`  | AST → typed AST. Optional, enabled per module. |
+| `compiler` | Typed AST → bytecode modules (`.jpc`). |
+| `vm`       | Bytecode → execution. Mark-sweep GC, green threads. |
+| `stdlib`   | Written in JapyScript; compiled alongside user code. |
+| `jpm`      | Package manager and registry client. |
+| `jpy`      | Unified command-line interface. |
 
-```javascript
-async def fetch_user(id):
-    res = await fetch(f"/api/users/{id}")
-    if !res.ok:
-        throw new Error("user not found")
-    return await res.json()
-
-users = await Promise.all(ids.map((id) => fetch_user(id)))
-```
-
-### Error handling
-
-```javascript
-try:
-    data = JSON.parse(raw)
-except SyntaxError as e:
-    print("bad json:", e.message)
-finally:
-    cleanup()
-```
-
-### Modules
-
-```javascript
-import math
-import { readFile, writeFile } from "fs"
-from datetime import now
-```
-
-### Optional types
-
-```javascript
-type Point = { x: float, y: float }
-
-def distance(a: Point, b: Point) -> float:
-    return ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5
-```
-
-Type annotations are erased at runtime and verified by `jpy check` before execution.
+---
 
 ## Toolchain
 
-| Command | Purpose |
-| --- | --- |
-| `jpy run app.jpy` | Execute a JapyScript program |
-| `jpy build app.jpy --target js` | Compile to JavaScript |
-| `jpy build app.jpy --target py` | Compile to Python |
-| `jpy check` | Static analysis and type checking |
-| `jpy repl` | Interactive shell |
-| `jpy fmt` | Canonical formatter |
-| `jpy test` | Built-in test runner |
-| `jpy doc` | Generate API documentation |
-| `jpm install <pkg>` | Package manager (npm + PyPI compatible) |
+- `jpy build <file.jpy>` — compile to bytecode
+- `jpy run <file.jpy>` — compile and execute
+- `jpy test` — run the project test suite
+- `jpy fmt` — canonical formatter
+- `jpy check` — static analysis and type checking
+- `jpy serve` — launch the project server
+- `jpm install <pkg>` — install packages
+- `jpm publish` — publish a package
 
-## Compilation Targets
+---
 
-JapyScript compiles to readable, source-mapped JavaScript (ES2022) and to readable, source-mapped Python (3.11+). Anything the language can express is expressible on both targets; features without a native equivalent are polyfilled by the runtime library shipped with the compiler.
+## Repository layout
 
-## Roadmap
-
-- [x] **Phase 0** — Language specification and design document
-- [ ] **Phase 1** — Lexer and tokenizer
-- [ ] **Phase 2** — Parser and AST
-- [ ] **Phase 3** — Tree-walking interpreter (reference implementation)
-- [ ] **Phase 4** — JavaScript transpiler backend
-- [ ] **Phase 5** — Standard library v1 (strings, collections, math, JSON, fs, http, datetime, regex)
-- [ ] **Phase 6** — Python transpiler backend
-- [ ] **Phase 7** — `jpm` package manager and registry client
-- [ ] **Phase 8** — Static type checker
-- [ ] **Phase 9** — Formatter, linter, language server (LSP), editor integrations
-- [ ] **Phase 10** — Self-hosted compiler
-
-Every phase ships a working artifact. Nothing is merged that does not run.
-
-## Repository Layout
-
-```
+``
 japyscript/
-├── docs/           Language specification and design notes
-├── src/
-│   ├── lexer/      Tokenizer
-│   ├── parser/     Parser and AST definitions
-│   ├── interpreter/ Reference tree-walking interpreter
-│   ├── transpiler/ JS and Python backends
-│   └── checker/    Static analyzer and type checker
-├── stdlib/         Standard library written in JapyScript
-├── runtime/        Runtime support for compiled output
-├── cli/            The `jpy` command
-├── examples/       Runnable example programs
-└── tests/          Conformance suite
-```
+  compiler/       lexer, parser, checker, bytecode emitter
+  vm/             virtual machine
+  stdlib/         language standard library
+  server/         web server and HTTP primitives
+  cli/            jpy command
+  jpm/            package manager
+  bindings/       native interop (C#, C, ...)
+  notebooks/      design analyses and profiling notebooks
+  tests/          conformance test suite
+  docs/           specification, grammar, architecture
+``
+
+---
 
 ## Contributing
 
-Read `docs/SPEC.md` first. Every change needs a test in `tests/`. Proposals that add syntax must show both a JavaScript and a Python spelling of the same construct.
+The language specification lives in `docs/SPEC.md`. Accepted changes add a test under `tests/`. Proposals must be small, motivated, and reviewed before implementation begins.
+
+## License
+
+MIT.
