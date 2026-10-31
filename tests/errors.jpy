@@ -1,0 +1,135 @@
+// JapyScript — error handling conformance test
+
+def raise_simple():
+    throw "simple error"
+
+caught = false
+try:
+    raise_simple()
+except as err:
+    caught = true
+    assert err == "simple error"
+assert caught
+
+finally_ran = false
+try:
+    raise_simple()
+except as err:
+    assert err == "simple error"
+finally:
+    finally_ran = true
+assert finally_ran
+
+clean_finally = false
+try:
+    assert 1 + 1 == 2
+finally:
+    clean_finally = true
+assert clean_finally
+
+inner_caught = false
+outer_caught = false
+
+try:
+    try:
+        raise_simple()
+    except as e1:
+        inner_caught = true
+        assert e1 == "simple error"
+        throw "rethrown"
+except as e2:
+    outer_caught = true
+    assert e2 == "rethrown"
+
+assert inner_caught
+assert outer_caught
+
+def level_three(): throw "deep"
+def level_two():   level_three()
+def level_one():   level_two()
+
+propagated = false
+try:
+    level_one()
+except as err:
+    propagated = true
+    assert err == "deep"
+assert propagated
+
+def find_first_negative(xs):
+    for x in xs:
+        if x < 0: throw "found negative: " + str(x)
+    return null
+
+first_error = null
+try:
+    find_first_negative([1, 2, 3, -1, 5])
+except as err:
+    first_error = err
+
+assert first_error != null
+assert contains(first_error, "negative")
+
+def fail_with_message(msg):
+    throw msg
+
+def catch_string():
+    caught_msg = null
+    try:
+        fail_with_message("custom message")
+    except as e:
+        caught_msg = e
+    return caught_msg
+
+assert catch_string() == "custom message"
+
+success_path = false
+try:
+    result = 10 / 2
+    assert result == 5
+    success_path = true
+except as e:
+    assert false
+assert success_path
+
+except_path = false
+try:
+    throw "should be caught"
+    assert false
+except as e:
+    except_path = true
+    assert e == "should be caught"
+assert except_path
+
+count = 0
+try:
+    count += 1
+except as e:
+    count += 100
+
+try:
+    count += 1
+except as e:
+    count += 100
+
+assert count == 2
+
+def contains(s, sub):
+    if len(sub) > len(s): return false
+    i = 0
+    while i <= len(s) - len(sub):
+        if matches_at(s, i, sub): return true
+        i += 1
+    return false
+
+def matches_at(s, i, sub):
+    j = 0
+    while j < len(sub):
+        if s[i + j] != sub[j]: return false
+        j += 1
+    return true
+
+def str(n):
+    return _str(n)
+
+print("errors.jpy — all assertions passed")
