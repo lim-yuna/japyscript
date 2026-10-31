@@ -1,0 +1,9 @@
+// JapyScript — hello world
+// Demonstrates bindings, functions, and string interpolation.
+
+def greet(name):
+    return f"Hello, {name}!"
+
+who = "world"
+message = greet(who)
+print(message)
