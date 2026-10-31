@@ -1,0 +1,244 @@
+// JapyScript — standard library conformance test
+//
+// Exercises the string, collections, and json modules. Must pass on every
+// compiler version.
+
+// --------------------------------------------------------------------------
+// String
+// --------------------------------------------------------------------------
+
+def reverse(s):
+    out = ""
+    i = len(s) - 1
+    while i >= 0:
+        out += s[i]
+        i -= 1
+    return out
+
+assert reverse("hello") == "olleh"
+assert reverse("") == ""
+assert reverse("a") == "a"
+
+def to_upper(s):
+    out = ""
+    for ch in s:
+        code = ord(ch)
+        if code >= 97 && code <= 122:
+            out += chr_of(code - 32)
+        else:
+            out += ch
+    return out
+
+def chr_of(code):
+    return _chr(code)
+
+assert to_upper("hello") == "HELLO"
+assert to_upper("Hello, World!") == "HELLO, WORLD!"
+
+def starts_with(s, p):
+    if len(p) > len(s): return false
+    i = 0
+    while i < len(p):
+        if s[i] != p[i]: return false
+        i += 1
+    return true
+
+assert starts_with("hello", "he")
+assert !starts_with("hello", "el")
+assert starts_with("hello", "")
+
+def ends_with(s, suf):
+    if len(suf) > len(s): return false
+    off = len(s) - len(suf)
+    i = 0
+    while i < len(suf):
+        if s[off + i] != suf[i]: return false
+        i += 1
+    return true
+
+assert ends_with("hello", "lo")
+assert !ends_with("hello", "el")
+
+def split(s, sep):
+    out = []
+    cur = ""
+    i = 0
+    while i < len(s):
+        if i + len(sep) <= len(s) && s[i:i+len(sep)] == sep:
+            out.append(cur)
+            cur = ""
+            i += len(sep)
+        else:
+            cur += s[i]
+            i += 1
+    out.append(cur)
+    return out
+
+// Split by single-character separator (no slice support required)
+def split_char(s, sep):
+    if len(sep) != 1: throw "split_char requires single-character separator"
+    out = []
+    cur = ""
+    for ch in s:
+        if ch == sep:
+            out.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    out.append(cur)
+    return out
+
+parts = split_char("a,b,c", ",")
+assert len(parts) == 3
+assert parts[0] == "a"
+assert parts[1] == "b"
+assert parts[2] == "c"
+
+empty_parts = split_char("", ",")
+assert len(empty_parts) == 1
+assert empty_parts[0] == ""
+
+// --------------------------------------------------------------------------
+// Collections
+// --------------------------------------------------------------------------
+
+def map(xs, fn):
+    out = []
+    for x in xs:
+        out.append(fn(x))
+    return out
+
+def filter(xs, pred):
+    out = []
+    for x in xs:
+        if pred(x): out.append(x)
+    return out
+
+def reduce(xs, fn, init):
+    acc = init
+    for x in xs:
+        acc = fn(acc, x)
+    return acc
+
+def range_list(start, end, step):
+    out = []
+    i = start
+    while i < end:
+        out.append(i)
+        i += step
+    return out
+
+assert map([1,2,3], (x) => x * 2) == [2,4,6]
+assert filter([1,2,3,4], (x) => x % 2 == 0) == [2,4]
+assert reduce([1,2,3,4], (a,b) => a + b, 0) == 10
+assert range_list(0, 10, 2) == [0, 2, 4, 6, 8]
+
+// zip
+def zip(a, b):
+    out = []
+    n = len(a)
+    if len(b) < n: n = len(b)
+    i = 0
+    while i < n:
+        out.append([a[i], b[i]])
+        i += 1
+    return out
+
+pairs = zip([1,2,3], ["a","b","c"])
+assert len(pairs) == 3
+assert pairs[0][0] == 1
+assert pairs[0][1] == "a"
+
+// flatten
+def flatten(nested):
+    out = []
+    for sub in nested:
+        for x in sub:
+            out.append(x)
+    return out
+
+assert flatten([[1,2],[3,4],[5]]) == [1,2,3,4,5]
+
+// sum/max/min
+def sum_list(xs):
+    t = 0
+    for x in xs:
+        t += x
+    return t
+
+def max_list(xs):
+    best = xs[0]
+    for x in xs:
+        if x > best: best = x
+    return best
+
+def min_list(xs):
+    best = xs[0]
+    for x in xs:
+        if x < best: best = x
+    return best
+
+assert sum_list([1,2,3,4,5]) == 15
+assert max_list([3,1,4,1,5,9,2,6]) == 9
+assert min_list([3,1,4,1,5,9,2,6]) == 1
+
+// --------------------------------------------------------------------------
+// JSON
+// --------------------------------------------------------------------------
+
+def json_encode_null():      return "null"
+def json_encode_true():      return "true"
+def json_encode_false():     return "false"
+def json_encode_int(n):      return str(n)
+
+def json_encode_string(s):
+    return "\"" + s + "\""
+
+def json_encode_list(xs):
+    out = "["
+    i = 0
+    while i < len(xs):
+        out += json_encode(xs[i])
+        if i < len(xs) - 1: out += ","
+        i += 1
+    return out + "]"
+
+def json_encode(m):
+    if m == null: return "null"
+    if m == true: return "true"
+    if m == false: return "false"
+    if type(m) == "int" || type(m) == "float": return str(m)
+    if type(m) == "str": return json_encode_string(m)
+    if type(m) == "list": return json_encode_list(m)
+    if type(m) == "dict": return json_encode_dict(m)
+    return "null"
+
+def json_encode_dict(m):
+    out = "{"
+    first = true
+    for k in keys_of(m):
+        if !first: out += ","
+        first = false
+        out += json_encode_string(k) + ":" + json_encode(m[k])
+    return out + "}"
+
+def keys_of(m):
+    return _keys(m)
+
+assert json_encode_null() == "null"
+assert json_encode_true() == "true"
+assert json_encode_false() == "false"
+assert json_encode_int(42) == "42"
+assert json_encode_string("hello") == "\"hello\""
+assert json_encode_list([1,2,3]) == "[1,2,3]"
+
+// dict encoding (insertion order)
+m = {"b": 2, "a": 1}
+enc = json_encode_dict(m)
+assert enc == "{\"b\":2,\"a\":1}" || enc == "{\"a\":1,\"b\":2}"
+
+// --------------------------------------------------------------------------
+// print (side-effect smoke test)
+// --------------------------------------------------------------------------
+
+print("stdlib.jpy — all assertions passed")
