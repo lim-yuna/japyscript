@@ -21,24 +21,24 @@ JapyScript (`.jpy`) is designed for software that lives for a decade: network se
 
 ### Bindings
 
-``jpy
+```jpy
 name = "Ada"
 let count = 0
 const LIMIT = 1024
-``
+```
 
 ### Functions
 
-``jpy
+```jpy
 def parse(source: string) -> Node:
     return Parser(source).build()
 
 transform = (x) => x * 2
-``
+```
 
 ### Control flow
 
-``jpy
+```jpy
 for job in queue:
     if job.retries && job.retries >= MAX:
         dead_letter(job)
@@ -49,11 +49,11 @@ for job in queue:
 
 while pending.count() > 0:
     process(pending.pop())
-``
+```
 
 ### Asynchronous execution
 
-``jpy
+```jpy
 async def fetch_route(path):
     response = await http.get(path)
     if !response.ok:
@@ -61,11 +61,11 @@ async def fetch_route(path):
     return response.json()
 
 routes = await Promise.all(paths.map(fetch_route))
-``
+```
 
 ### Servers
 
-``jpy
+```jpy
 app = Server(host="0.0.0.0", port=8080)
 
 app.route("GET", "/health", () => {"status": "ok"})
@@ -75,11 +75,11 @@ app.route("POST", "/jobs", async (req) => {
 })
 
 await app.listen()
-``
+```
 
 ### Types
 
-``jpy
+```jpy
 type Job = {
     id: string,
     payload: bytes,
@@ -90,11 +90,11 @@ type Handler = (Job) -> Result
 
 def execute(job: Job, handler: Handler) -> Result:
     return handler(job)
-``
+```
 
 ### Classes
 
-``jpy
+```jpy
 class Connection:
     def __init__(self, host: string, port: int):
         self.host = host
@@ -104,7 +104,7 @@ class Connection:
     def open(self) -> bool:
         self.socket = net.connect(self.host, self.port)
         return self.socket != null
-``
+```
 
 ---
 
@@ -138,7 +138,7 @@ class Connection:
 
 ## Repository layout
 
-``
+```
 japyscript/
   compiler/       lexer, parser, checker, bytecode emitter
   vm/             virtual machine
@@ -150,7 +150,7 @@ japyscript/
   notebooks/      design analyses and profiling notebooks
   tests/          conformance test suite
   docs/           specification, grammar, architecture
-``
+```
 
 ---
 
