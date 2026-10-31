@@ -1,0 +1,164 @@
+// JapyScript standard library — string module
+//
+// All functions are pure. Nil input raises on operations that require text.
+
+def upper(s):
+    out = ""
+    for ch in s:
+        out += _upper_char(ch)
+    return out
+
+def _upper_char(ch):
+    code = ord_of(ch)
+    if code >= 97 && code <= 122:
+        return chr_of(code - 32)
+    return ch
+
+def lower(s):
+    out = ""
+    for ch in s:
+        out += _lower_char(ch)
+    return out
+
+def _lower_char(ch):
+    code = ord_of(ch)
+    if code >= 65 && code <= 90:
+        return chr_of(code + 32)
+    return ch
+
+def length(s):
+    n = 0
+    for _ in s:
+        n += 1
+    return n
+
+def trim(s):
+    return trim_left(trim_right(s))
+
+def trim_left(s):
+    i = 0
+    while i < length(s) && is_space(char_at(s, i)):
+        i += 1
+    return substring(s, i, length(s))
+
+def trim_right(s):
+    j = length(s)
+    while j > 0 && is_space(char_at(s, j - 1)):
+        j -= 1
+    return substring(s, 0, j)
+
+def is_space(ch):
+    return ch == " " || ch == "\t" || ch == "\n" || ch == "\r"
+
+def char_at(s, i):
+    return s[i]
+
+def substring(s, start, end):
+    out = ""
+    i = start
+    while i < end:
+        out += s[i]
+        i += 1
+    return out
+
+def split(s, sep):
+    if length(sep) == 0:
+        throw "split separator must be non-empty"
+    out = []
+    current = ""
+    i = 0
+    while i < length(s):
+        if matches_at(s, i, sep):
+            out.append(current)
+            current = ""
+            i += length(sep)
+        else:
+            current += s[i]
+            i += 1
+    out.append(current)
+    return out
+
+def matches_at(s, i, sub):
+    if i + length(sub) > length(s):
+        return false
+    j = 0
+    while j < length(sub):
+        if s[i + j] != sub[j]:
+            return false
+        j += 1
+    return true
+
+def join(parts, sep):
+    out = ""
+    i = 0
+    while i < len(parts):
+        out += parts[i]
+        if i < len(parts) - 1:
+            out += sep
+        i += 1
+    return out
+
+def starts_with(s, prefix):
+    if length(prefix) > length(s):
+        return false
+    i = 0
+    while i < length(prefix):
+        if s[i] != prefix[i]:
+            return false
+        i += 1
+    return true
+
+def ends_with(s, suffix):
+    if length(suffix) > length(s):
+        return false
+    offset = length(s) - length(suffix)
+    i = 0
+    while i < length(suffix):
+        if s[offset + i] != suffix[i]:
+            return false
+        i += 1
+    return true
+
+def contains(s, sub):
+    i = 0
+    while i <= length(s) - length(sub):
+        if matches_at(s, i, sub):
+            return true
+        i += 1
+    return false
+
+def replace(s, old, new):
+    if length(old) == 0:
+        throw "replace target must be non-empty"
+    out = ""
+    i = 0
+    while i < length(s):
+        if matches_at(s, i, old):
+            out += new
+            i += length(old)
+        else:
+            out += s[i]
+            i += 1
+    return out
+
+def repeat(s, n):
+    out = ""
+    i = 0
+    while i < n:
+        out += s
+        i += 1
+    return out
+
+def reverse(s):
+    out = ""
+    i = length(s) - 1
+    while i >= 0:
+        out += s[i]
+        i -= 1
+    return out
+
+def ord_of(ch):
+    return _ord(ch)
+
+def chr_of(code):
+    return _chr(code)
