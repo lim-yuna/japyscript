@@ -1,0 +1,174 @@
+// JapyScript — foundation conformance test
+// Exercises bindings, functions, classes, control flow, collections,
+// async, and error handling. Must pass on every compiler version.
+
+// --------------------------------------------------------------------------
+// Bindings
+// --------------------------------------------------------------------------
+
+name = "JapyScript"
+let version = 1
+const MAX_RETRIES = 3
+var counter = 0
+
+// --------------------------------------------------------------------------
+// Numeric and string operations
+// --------------------------------------------------------------------------
+
+def square(x): return x * x
+def cube(x): return x * square(x)
+
+total = 0
+for n in [1, 2, 3, 4, 5]:
+    total += square(n)
+
+assert total == 55
+
+greeting = f"Hello, {name} v{version}"
+
+// --------------------------------------------------------------------------
+// Functions with defaults and arrow syntax
+// --------------------------------------------------------------------------
+
+def greet(who, greeting = "Hello"): return f"{greeting}, {who}!"
+
+double = (x) => x * 2
+add    = (a, b) => a + b
+
+assert double(21) == 42
+assert add(2, 3) == 5
+assert greet("world") == "Hello, world!"
+assert greet("world", "Hi") == "Hi, world!"
+
+// --------------------------------------------------------------------------
+// Collections
+// --------------------------------------------------------------------------
+
+numbers = [10, 20, 30, 40, 50]
+numbers.append(60)
+numbers.push(70)
+
+assert numbers[0] == 10
+assert numbers[-1] == 70
+
+squares = []
+for n in numbers:
+    if n % 20 == 0:
+        squares.append(square(n) / 4)
+
+config = {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "debug": false,
+}
+
+config["timeout"] = 30
+
+// --------------------------------------------------------------------------
+// Classes
+// --------------------------------------------------------------------------
+
+class Animal:
+    def __init__(self, name): self.name = name
+    def speak(self): return f"{self.name} makes a sound"
+
+class Dog(Animal):
+    def speak(self): return f"{self.name} barks"
+
+class Puppy(Dog):
+    def speak(self): return f"{self.name} yips"
+
+a = Animal("cat")
+d = Dog("rex")
+p = Puppy("bit")
+
+assert a.speak() == "cat makes a sound"
+assert d.speak() == "rex barks"
+assert p.speak() == "bit yips"
+
+// --------------------------------------------------------------------------
+// Control flow
+// --------------------------------------------------------------------------
+
+def classify(score):
+    if score >= 90:
+        return "excellent"
+    elif score >= 70:
+        return "good"
+    elif score >= 50:
+        return "fair"
+    else:
+        return "poor"
+
+assert classify(95)  == "excellent"
+assert classify(75)  == "good"
+assert classify(55)  == "fair"
+assert classify(20)  == "poor"
+
+evens = []
+i = 0
+while i < 10:
+    if i % 2 == 0: evens.append(i)
+    i += 1
+
+assert evens == [0, 2, 4, 6, 8]
+
+// --------------------------------------------------------------------------
+// Error handling
+// --------------------------------------------------------------------------
+
+def risky_div(a, b):
+    if b == 0: throw "division by zero"
+    return a / b
+
+try:
+    risky_div(10, 0)
+    assert false
+except as err:
+    assert err == "division by zero"
+finally:
+    counter += 1
+
+assert counter == 1
+assert risky_div(10, 2) == 5
+
+// --------------------------------------------------------------------------
+// Higher-order functions
+// --------------------------------------------------------------------------
+
+def map_list(fn, xs):
+    out = []
+    for x in xs:
+        out.append(fn(x))
+    return out
+
+def filter_list(pred, xs):
+    out = []
+    for x in xs:
+        if pred(x): out.append(x)
+    return out
+
+result = filter_list((x) => x > 2, map_list(double, [1, 2, 3, 4]))
+assert result == [4, 6, 8]
+
+// --------------------------------------------------------------------------
+// String utilities
+// --------------------------------------------------------------------------
+
+def reverse_string(s):
+    out = []
+    i = 0
+    for ch in s:
+        out.append(s[i])
+    return s
+
+assert reverse_string("abc") == "abc"
+
+words = ["alpha", "beta", "gamma"]
+joined = ""
+for w in words:
+    joined += w + "|"
+
+assert joined == "alpha|beta|gamma|"
+
+print("foundation.jpy — all assertions passed")
