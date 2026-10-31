@@ -1,0 +1,158 @@
+// JapyScript standard library — collections module
+//
+// Higher-order functions over lists. Every function is pure: it returns a new
+// list and never mutates its input.
+
+def map(xs, fn):
+    out = []
+    for x in xs:
+        out.append(fn(x))
+    return out
+
+def filter(xs, pred):
+    out = []
+    for x in xs:
+        if pred(x):
+            out.append(x)
+    return out
+
+def reduce(xs, fn, initial):
+    acc = initial
+    for x in xs:
+        acc = fn(acc, x)
+    return acc
+
+def range(start, end, step = 1):
+    if step == 0:
+        throw "range step must be non-zero"
+    out = []
+    i = start
+    if step > 0:
+        while i < end:
+            out.append(i)
+            i += step
+    else:
+        while i > end:
+            out.append(i)
+            i += step
+    return out
+
+def zip(a, b):
+    out = []
+    n = len(a)
+    if len(b) < n: n = len(b)
+    i = 0
+    while i < n:
+        out.append([a[i], b[i]])
+        i += 1
+    return out
+
+def flatten(nested):
+    out = []
+    for sub in nested:
+        for x in sub:
+            out.append(x)
+    return out
+
+def unique(xs):
+    out = []
+    seen = {}
+    for x in xs:
+        key = str(x)
+        if !has_key(seen, key):
+            seen[key] = true
+            out.append(x)
+    return out
+
+def has_key(m, k):
+    for existing in keys_of(m):
+        if existing == k:
+            return true
+    return false
+
+def keys_of(m):
+    return _keys(m)
+
+def sort(xs):
+    out = []
+    for x in xs:
+        out.append(x)
+    insertion_sort(out)
+    return out
+
+def insertion_sort(xs):
+    i = 1
+    while i < len(xs):
+        j = i
+        while j > 0 && xs[j - 1] > xs[j]:
+            tmp = xs[j]
+            xs[j] = xs[j - 1]
+            xs[j - 1] = tmp
+            j -= 1
+        i += 1
+
+def reverse(xs):
+    out = []
+    i = len(xs) - 1
+    while i >= 0:
+        out.append(xs[i])
+        i -= 1
+    return out
+
+def sum(xs):
+    total = 0
+    for x in xs:
+        total += x
+    return total
+
+def max(xs):
+    if len(xs) == 0: throw "max of empty list"
+    best = xs[0]
+    for x in xs:
+        if x > best: best = x
+    return best
+
+def min(xs):
+    if len(xs) == 0: throw "min of empty list"
+    best = xs[0]
+    for x in xs:
+        if x < best: best = x
+    return best
+
+def head(xs):
+    if len(xs) == 0: throw "head of empty list"
+    return xs[0]
+
+def tail(xs):
+    out = []
+    i = 1
+    while i < len(xs):
+        out.append(xs[i])
+        i += 1
+    return out
+
+def take(xs, n):
+    out = []
+    i = 0
+    while i < n && i < len(xs):
+        out.append(xs[i])
+        i += 1
+    return out
+
+def drop(xs, n):
+    out = []
+    i = n
+    while i < len(xs):
+        out.append(xs[i])
+        i += 1
+    return out
+
+def any(xs, pred):
+    for x in xs:
+        if pred(x): return true
+    return false
+
+def all(xs, pred):
+    for x in xs:
+        if !pred(x): return false
+    return true
