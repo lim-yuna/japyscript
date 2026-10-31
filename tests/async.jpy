@@ -1,0 +1,81 @@
+// JapyScript — async / await conformance test
+//
+// Exercises the green-thread scheduler.
+
+async def compute(n):
+    return n * 2
+
+def basic_async():
+    result = await compute(21)
+    assert result == 42
+
+await basic_async()
+
+async def add(a, b):
+    return a + b
+
+async def total_of_three():
+    a = await add(1, 2)
+    b = await add(a, 3)
+    c = await add(b, 4)
+    return c
+
+def chained_async():
+    result = await total_of_three()
+    assert result == 10
+
+await chained_async()
+
+async def risky(n):
+    if n < 0: throw "negative"
+    return n * n
+
+def safe_call():
+    try:
+        r = await risky(-1)
+        assert false
+    except as err:
+        assert err == "negative"
+    result = await risky(5)
+    assert result == 25
+
+await safe_call()
+
+async def process(xs):
+    out = []
+    for x in xs:
+        out.append(x * 2)
+    return out
+
+def process_test():
+    result = await process([1, 2, 3])
+    assert result == [2, 4, 6]
+
+await process_test()
+
+async def level_three(n): return n + 3
+async def level_two(n):   return await level_three(n) * 2
+async def level_one(n):   return await level_two(n) + 1
+
+def nested_test():
+    assert await level_one(5) == 17
+
+await nested_test()
+
+class Counter:
+    def __init__(self):
+        self.value = 0
+
+    async def increment(self, by):
+        self.value += by
+        return self.value
+
+def counter_test():
+    c = Counter()
+    assert await c.increment(1) == 1
+    assert await c.increment(5) == 6
+    assert await c.increment(10) == 16
+
+await counter_test()
+
+print("async.jpy — all assertions passed")
