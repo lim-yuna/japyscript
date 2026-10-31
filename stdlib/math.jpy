@@ -1,0 +1,94 @@
+// JapyScript standard library — math module
+//
+// Numeric helpers. Elementary transcendental functions are exposed as VM
+// primitives (prefixed _math_); integer-pure functions are implemented here.
+
+pi  = 3.14159265358979323846
+e   = 2.71828182845904523536
+tau = 6.28318530717958647692
+
+// ---- integer-pure functions ----------------------------------------------
+
+def abs(n):
+    if n < 0: return -n
+    return n
+
+def sign(n):
+    if n > 0: return 1
+    if n < 0: return -1
+    return 0
+
+def gcd(a, b):
+    a = abs(a)
+    b = abs(b)
+    while b != 0:
+        tmp = b
+        b = a % b
+        a = tmp
+    return a
+
+def lcm(a, b):
+    if a == 0 || b == 0: return 0
+    return abs(a * b) / gcd(a, b)
+
+def clamp(x, low, high):
+    if x < low:  return low
+    if x > high: return high
+    return x
+
+def is_even(n): return n % 2 == 0
+def is_odd(n):  return n % 2 != 0
+
+def is_prime(n):
+    if n < 2: return false
+    if n < 4: return true
+    if n % 2 == 0: return false
+    i = 3
+    while i * i <= n:
+        if n % i == 0: return false
+        i += 2
+    return true
+
+def factorial(n):
+    if n < 0: throw "factorial of negative"
+    result = 1
+    i = 2
+    while i <= n:
+        result *= i
+        i += 1
+    return result
+
+// ---- transcendental functions (VM primitives) ----------------------------
+
+def floor(x):   return _math_floor(x)
+def ceil(x):    return _math_ceil(x)
+def round(x):   return _math_round(x)
+def trunc(x):   return _math_trunc(x)
+def sqrt(x):    return _math_sqrt(x)
+def cbrt(x):    return _math_cbrt(x)
+def pow(x, y):  return _math_pow(x, y)
+def exp(x):     return _math_exp(x)
+def log(x):     return _math_log(x)
+def log2(x):    return _math_log2(x)
+def log10(x):   return _math_log10(x)
+def sin(x):     return _math_sin(x)
+def cos(x):     return _math_cos(x)
+def tan(x):     return _math_tan(x)
+def asin(x):    return _math_asin(x)
+def acos(x):    return _math_acos(x)
+def atan(x):    return _math_atan(x)
+def atan2(y, x):return _math_atan2(y, x)
+
+def min(a, b):
+    if a < b: return a
+    return b
+
+def max(a, b):
+    if a > b: return a
+    return b
+
+def hypot(a, b):
+    return sqrt(a * a + b * b)
+
+def degrees(radians): return radians * 180 / pi
+def radians(degrees): return degrees * pi / 180
