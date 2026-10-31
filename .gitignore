@@ -1,0 +1,35 @@
+# Compiled bytecode
+*.jpc
+*.jpc.map
+
+# Build output
+dist/
+build/
+out/
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# .NET tooling
+bin/
+obj/
+*.user
+.vs/
+
+# PHP tooling
+vendor/
+composer.lock
+
+# Editors
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
