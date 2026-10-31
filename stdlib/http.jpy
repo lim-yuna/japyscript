@@ -1,0 +1,96 @@
+// JapyScript standard library — http module
+//
+// HTTP/1.1 client and server primitives.
+
+class Request:
+    def __init__(self, method, path, headers, body, query):
+        self.method  = method
+        self.path    = path
+        self.headers = headers
+        self.body    = body
+        self.query   = query
+
+    def json(self):
+        return json.decode(self.body)
+
+    def text(self):
+        return self.body
+
+    def header(self, name):
+        key = lower_str(name)
+        for k in _keys(self.headers):
+            if lower_str(k) == key:
+                return self.headers[k]
+        return null
+
+class Response:
+    def __init__(self, status, body, headers):
+        self.status  = status
+        self.body    = body
+        self.headers = headers
+
+def ok(body):
+    return Response(200, body, {"Content-Type": "application/json"})
+
+def created(body):
+    return Response(201, body, {"Content-Type": "application/json"})
+
+def no_content():
+    return Response(204, "", {})
+
+def bad_request(message):
+    return Response(400, json.encode({"error": message}), {"Content-Type": "application/json"})
+
+def unauthorized(message):
+    return Response(401, json.encode({"error": message}), {"Content-Type": "application/json"})
+
+def forbidden(message):
+    return Response(403, json.encode({"error": message}), {"Content-Type": "application/json"})
+
+def not_found(path):
+    return Response(404, json.encode({"error": "not found", "path": path}), {"Content-Type": "application/json"})
+
+def server_error(message):
+    return Response(500, json.encode({"error": message}), {"Content-Type": "application/json"})
+
+def redirect(location, status):
+    return Response(status, "", {"Location": location})
+
+def lower_str(s):
+    out = ""
+    for ch in s:
+        code = ord_of(ch)
+        if code >= 65 && code <= 90:
+            out += chr_of(code + 32)
+        else:
+            out += ch
+    return out
+
+def ord_of(ch): return _ord(ch)
+def chr_of(code): return _chr(code)
+
+class Client:
+    def __init__(self, base_url, timeout = 30):
+        self.base_url = base_url
+        self.timeout  = timeout
+
+    def get(self, path, headers = null):
+        return self.request("GET", path, headers, null)
+
+    def post(self, path, body, headers = null):
+        return self.request("POST", path, headers, body)
+
+    def put(self, path, body, headers = null):
+        return self.request("PUT", path, headers, body)
+
+    def delete(self, path, headers = null):
+        return self.request("DELETE", path, headers, null)
+
+    def request(self, method, path, headers, body):
+        return _http_request(self.base_url + path, method, headers, body, self.timeout)
+
+def get(url, headers = null):
+    return _http_request(url, "GET", headers, null, 30)
+
+def post(url, body, headers = null):
+    return _http_request(url, "POST", headers, body, 30)
