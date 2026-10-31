@@ -1,0 +1,127 @@
+// JapyScript standard library — fs module
+//
+// Filesystem access. All operations are synchronous and throw on error.
+// Path handling is delegated to the VM's _fs_* primitives.
+
+def read(path):
+    return _fs_read(path)
+
+def read_bytes(path):
+    return _fs_read_bytes(path)
+
+def write(path, content):
+    _fs_write(path, content)
+    return true
+
+def write_bytes(path, data):
+    _fs_write_bytes(path, data)
+    return true
+
+def append(path, content):
+    _fs_append(path, content)
+    return true
+
+def exists(path):
+    return _fs_exists(path)
+
+def is_file(path):
+    return _fs_is_file(path)
+
+def is_dir(path):
+    return _fs_is_dir(path)
+
+def size(path):
+    return _fs_size(path)
+
+def remove(path):
+    _fs_remove(path)
+    return true
+
+def mkdir(path):
+    _fs_mkdir(path)
+    return true
+
+def mkdir_p(path):
+    _fs_mkdir_p(path)
+    return true
+
+def rmdir(path):
+    _fs_rmdir(path)
+    return true
+
+def list_dir(path):
+    return _fs_list_dir(path)
+
+def rename(src, dst):
+    _fs_rename(src, dst)
+    return true
+
+def copy(src, dst):
+    _fs_copy(src, dst)
+    return true
+
+def join(parts):
+    out = ""
+    i = 0
+    while i < len(parts):
+        if i > 0 && !ends_with_sep(parts[i - 1]):
+            out += sep()
+        out += parts[i]
+        i += 1
+    return out
+
+def ends_with_sep(s):
+    if len(s) == 0: return false
+    return s[len(s) - 1] == "/" || s[len(s) - 1] == "\\"
+
+def sep():
+    return _fs_sep()
+
+def cwd():
+    return _fs_cwd()
+
+def basename(path):
+    i = len(path) - 1
+    while i >= 0 && path[i] != "/" && path[i] != "\\":
+        i -= 1
+    return path[i + 1:len(path)]
+
+def dirname(path):
+    i = len(path) - 1
+    while i >= 0 && path[i] != "/" && path[i] != "\\":
+        i -= 1
+    if i < 0: return "."
+    return path[0:i]
+
+def extname(path):
+    name = basename(path)
+    i = len(name) - 1
+    while i >= 0:
+        if name[i] == ".":
+            return name[i:len(name)]
+        i -= 1
+    return ""
+
+def read_lines(path):
+    content = read(path)
+    out = []
+    current = ""
+    for ch in content:
+        if ch == "\n":
+            out.append(current)
+            current = ""
+        else:
+            current += ch
+    if len(current) > 0:
+        out.append(current)
+    return out
+
+def write_lines(path, lines):
+    content = ""
+    i = 0
+    while i < len(lines):
+        content += lines[i]
+        if i < len(lines) - 1:
+            content += "\n"
+        i += 1
+    return write(path, content)
