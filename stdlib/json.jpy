@@ -1,0 +1,214 @@
+// JapyScript standard library — json module
+//
+// Encoder and decoder for the JSON data model. Handles null, bool, number,
+// string, array, and object. Strings are encoded with the required escapes.
+
+def encode(v):
+    return _encode(v)
+
+def _encode(v):
+    t = type_of(v)
+    if t == "null":     return "null"
+    if t == "bool":     return if_true("true", "false", v)
+    if t == "int":      return str(v)
+    if t == "float":    return str(v)
+    if t == "string":   return _encode_string(v)
+    if t == "list":     return _encode_list(v)
+    if t == "dict":     return _encode_dict(v)
+    throw "json: cannot encode " + t
+
+def if_true(a, b, cond):
+    if cond: return a
+    return b
+
+def type_of(v):
+    if v == null: return "null"
+    if v == true || v == false: return "bool"
+    if is_int(v): return "int"
+    if is_float(v): return "float"
+    if is_str(v): return "string"
+    if is_list(v): return "list"
+    if is_dict(v): return "dict"
+    return "unknown"
+
+def is_int(v):   return _is(v, "int")
+def is_float(v): return _is(v, "float")
+def is_str(v):   return _is(v, "str")
+def is_list(v):  return _is(v, "list")
+def is_dict(v):  return _is(v, "dict")
+
+def is_str(v):
+    return _is_type(v, "string")
+
+def _encode_string(s):
+    out = "\""
+    i = 0
+    while i < len(s):
+        out += _escape(s[i])
+        i += 1
+    out += "\""
+    return out
+
+def _escape(ch):
+    if ch == "\"":  return "\\\""
+    if ch == "\\":  return "\\\\"
+    if ch == "\n":  return "\\n"
+    if ch == "\r":  return "\\r"
+    if ch == "\t":  return "\\t"
+    code = ord_of(ch)
+    if code < 32:
+        return "\\u" + pad_hex(code)
+    return ch
+
+def pad_hex(code):
+    h = _hex(code)
+    while len(h) < 4:
+        h = "0" + h
+    return h
+
+def _encode_list(xs):
+    out = "["
+    i = 0
+    while i < len(xs):
+        out += _encode(xs[i])
+        if i < len(xs) - 1:
+            out += ","
+        i += 1
+    out += "]"
+    return out
+
+def _encode_dict(m):
+    out = "{"
+    ks = _keys(m)
+    i = 0
+    while i < len(ks):
+        k = ks[i]
+        out += _encode_string(k) + ":" + _encode(m[k])
+        if i < len(ks) - 1:
+            out += ","
+        i += 1
+    out += "}"
+    return out
+
+def decode(s):
+    parser = _Parser(s)
+    value = parser.value()
+    parser.skip_ws()
+    if !parser.at_end():
+        throw "json: trailing characters at position " + str(parser.pos)
+    return value
+
+class _Parser:
+    def __init__(self, s):
+        self.s = s
+        self.pos = 0
+
+    def at_end(self):
+        return self.pos >= len(self.s)
+
+    def peek(self):
+        if self.at_end(): return ""
+        return self.s[self.pos]
+
+    def next(self):
+        ch = self.s[self.pos]
+        self.pos += 1
+        return ch
+
+    def skip_ws(self):
+        while !self.at_end() && self.peek() in " \t\n\r":
+            self.pos += 1
+
+    def value(self):
+        self.skip_ws()
+        ch = self.peek()
+        if ch == "\"": return self.string()
+        if ch == "{": return self.object()
+        if ch == "[": return self.array()
+        if ch == "t": self.expect_word("true");  return true
+        if ch == "f": self.expect_word("false"); return false
+        if ch == "n": self.expect_word("null");  return null
+        return self.number()
+
+    def expect_word(self, w):
+        i = 0
+        while i < len(w):
+            if self.next() != w[i]:
+                throw "json: expected " + w
+            i += 1
+
+    def string(self):
+        if self.next() != "\"": throw "json: expected string"
+        out = ""
+        while !self.at_end() && self.peek() != "\"":
+            ch = self.next()
+            if ch == "\\":
+                esc = self.next()
+                if esc == "n": out += "\n"
+                elif esc == "r": out += "\r"
+                elif esc == "t": out += "\t"
+                elif esc == "\\": out += "\\"
+                elif esc == "\"": out += "\""
+                else: out += esc
+            else:
+                out += ch
+        self.next()  // closing quote
+        return out
+
+    def number(self):
+        start = self.pos
+        while !self.at_end() && self.peek() in "-0123456789.eE+":
+            self.pos += 1
+        return _parse_number(self.s[start:self.pos])
+
+    def array(self):
+        self.next()
+        out = []
+        self.skip_ws()
+        if self.peek() == "]":
+            self.next()
+            return out
+        while true:
+            out.append(self.value())
+            self.skip_ws()
+            ch = self.next()
+            if ch == "]": return out
+            if ch != ",": throw "json: expected , or ]"
+
+    def object(self):
+        self.next()
+        out = {}
+        self.skip_ws()
+        if self.peek() == "}":
+            self.next()
+            return out
+        while true:
+            self.skip_ws()
+            key = self.string()
+            self.skip_ws()
+            if self.next() != ":": throw "json: expected :"
+            out[key] = self.value()
+            self.skip_ws()
+            ch = self.next()
+            if ch == "}": return out
+            if ch != ",": throw "json: expected , or }"
+
+def pretty(v, indent = 2):
+    return _pretty(v, indent, 0)
+
+def _pretty(v, indent, depth):
+    pad = ""
+    i = 0
+    while i < depth * indent:
+        pad += " "
+        i += 1
+    if is_list(v):
+        if len(v) == 0: return "[]"
+        inner = ""
+        j = 0
+        while j < len(v):
+            inner += "\n" + _pretty(v[j], indent, depth + 1)
+            if j < len(v) - 1: inner += ","
+            j += 1
+        return "[\n" + inner + "\n" + pad + "]"
+    return _encode(v)
