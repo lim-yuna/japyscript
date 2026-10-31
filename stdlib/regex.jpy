@@ -1,0 +1,54 @@
+// JapyScript standard library — regex module
+
+class Match:
+    def __init__(self, text, groups):
+        self.text   = text
+        self.groups = groups
+
+    def group(self, n):
+        if n >= len(self.groups): return null
+        return self.groups[n]
+
+    def start(self):
+        return self.groups[0]
+
+class Pattern:
+    def __init__(self, source, flags):
+        self.source = source
+        self.flags  = flags
+        self._handle = _re_compile(source, flags)
+
+    def test(self, s):
+        return _re_test(self._handle, s)
+
+    def match(self, s):
+        groups = _re_match(self._handle, s)
+        if groups == null: return null
+        return Match(s, groups)
+
+    def find_all(self, s):
+        return _re_find_all(self._handle, s)
+
+    def replace(self, s, replacement):
+        return _re_replace(self._handle, s, replacement)
+
+    def split(self, s):
+        return _re_split(self._handle, s)
+
+def compile(source, flags = ""):
+    return Pattern(source, flags)
+
+def is_match(pattern, s):
+    return compile(pattern).test(s)
+
+def search(pattern, s):
+    return compile(pattern).match(s)
+
+def find_all(pattern, s):
+    return compile(pattern).find_all(s)
+
+def replace(pattern, s, replacement):
+    return compile(pattern).replace(s, replacement)
+
+def escape(s):
+    return _re_escape(s)
