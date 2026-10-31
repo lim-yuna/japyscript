@@ -28,25 +28,25 @@ Developers are forced to pick. JapyScript refuses the choice. One syntax, one st
 
 ### Hello, world
 
-``javascript
+```javascript
 print("Hello, JapyScript!")
 console.log("Hello, JapyScript!")   // same function
-``
+```
 
 ### Variables and constants
 
-``javascript
+```javascript
 name = "Ada"            // implicit declaration, Python-style
 age = 36
 
 const PI = 3.14159      // explicit, immutable
 let counter = 0         // explicit, mutable
 var legacy = true       // hoisted, kept for JS interop
-``
+```
 
 ### Functions
 
-``javascript
+```javascript
 def greet(name, greeting = "Hello"):
     return f"{greeting}, {name}!"
 
@@ -54,11 +54,11 @@ double = (x) => x * 2
 
 def add(a: int, b: int) -> int:
     return a + b
-``
+```
 
 ### Control flow
 
-``javascript
+```javascript
 for item in items:
     if item.active && item.score >= 90:
         print(item.name)
@@ -70,11 +70,11 @@ for item in items:
 for i in range(10): print(i)
 
 users.forEach((u) => print(u.name))
-``
+```
 
 ### Collections
 
-``javascript
+```javascript
 nums = [1, 2, 3]
 nums.append(4)          // Python method
 nums.push(5)            // JS method — identical effect
@@ -89,11 +89,11 @@ config = {"host": "localhost", "port": 8080}
 config["debug"] = true
 config.port             // attribute access on dicts
 config.get("timeout", 30)
-``
+```
 
 ### Classes
 
-``javascript
+```javascript
 class Animal:
     def __init__(self, name):
         self.name = name
@@ -108,11 +108,11 @@ class Dog(Animal):
     @staticmethod
     def species():
         return "Canis familiaris"
-``
+```
 
 ### Asynchronous programming
 
-``javascript
+```javascript
 async def fetch_user(id):
     res = await fetch(f"/api/users/{id}")
     if !res.ok:
@@ -120,35 +120,35 @@ async def fetch_user(id):
     return await res.json()
 
 users = await Promise.all(ids.map((id) => fetch_user(id)))
-``
+```
 
 ### Error handling
 
-``javascript
+```javascript
 try:
     data = JSON.parse(raw)
 except SyntaxError as e:
     print("bad json:", e.message)
 finally:
     cleanup()
-``
+```
 
 ### Modules
 
-``javascript
+```javascript
 import math
 import { readFile, writeFile } from "fs"
 from datetime import now
-``
+```
 
 ### Optional types
 
-``javascript
+```javascript
 type Point = { x: float, y: float }
 
 def distance(a: Point, b: Point) -> float:
     return ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5
-``
+```
 
 Type annotations are erased at runtime and verified by `jpy check` before execution.
 
@@ -188,7 +188,7 @@ Every phase ships a working artifact. Nothing is merged that does not run.
 
 ## Repository Layout
 
-``
+```
 japyscript/
 ├── docs/           Language specification and design notes
 ├── src/
@@ -202,7 +202,7 @@ japyscript/
 ├── cli/            The `jpy` command
 ├── examples/       Runnable example programs
 └── tests/          Conformance suite
-``
+```
 
 ## Contributing
 
